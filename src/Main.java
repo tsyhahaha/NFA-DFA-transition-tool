@@ -7,7 +7,7 @@ import java.io.FileNotFoundException;
 
 public class Main {
     public static void main(String[] args) throws FileNotFoundException {
-        String inputFile = "E:\\大三上高工\\编译技术\\NFA2DFA\\src\\test.txt";  // your file place
+        String inputFile = "";  // your file place
         NFAGenerator nfaGenerator = new NFAGenerator(inputFile);
         NFAGraph nfaGraph = nfaGenerator.run();
         System.out.println("NFA Graph generated!");
