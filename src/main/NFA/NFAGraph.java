@@ -6,13 +6,15 @@ import java.util.List;
 import java.util.Stack;
 
 public class NFAGraph {
-    private Integer startNode = 1;  // 默认起始节点为 0 号节点
+    private Integer startNode = 1;  // 默认起始节点为 1 号节点
+    private List<String> allInputs;     // 输入符号集
     private List<Integer> nfaNodes;
     private HashMap<Integer, HashMap<String, List<Integer>>> edges;
 
-    public NFAGraph(List<Integer> nfaNodes, HashMap<Integer, HashMap<String, List<Integer>>> edges) {
+    public NFAGraph(List<Integer> nfaNodes, HashMap<Integer, HashMap<String, List<Integer>>> edges, List<String> inputs) {
         this.nfaNodes = nfaNodes;
         this.edges = edges;
+        this.allInputs = inputs;
     }
 
     public Integer getStartNode() {
@@ -29,7 +31,7 @@ public class NFAGraph {
             if (!edges.containsKey(nowNode) ||
                     !edges.get(nowNode).containsKey("") ||
                     edges.get(nowNode).get("").size() == 0) {
-                continue;
+                continue;   // 如果不存在空转移的边则跳过
             }
             List<Integer> eps_nodes = edges.get(nowNode).get("");
             for (Integer eps_node : eps_nodes) {
@@ -39,21 +41,26 @@ public class NFAGraph {
                 }
             }
         }
+//        System.out.println("e-closure("+node+")="+result);
         return result;
     }
 
-    public boolean hasEdges(Integer node) {
+    private boolean hasEdges(Integer node) {
         return this.edges.containsKey(node) && this.edges.get(node).size() > 0;
     }
 
-    public List<String> getAllInput(Integer node) {
-        if(hasEdges(node)) {
-            return new ArrayList<>(this.edges.get(node).keySet());
-        }
-        return null;
+    private boolean hasEdges(Integer node, String input) {
+        return this.hasEdges(node) && this.edges.get(node).containsKey(input);
+    }
+
+    public List<String> getAllInput() {
+        return this.allInputs;
     }
 
     public List<Integer> getNextNodes(Integer node, String input) {
-        return this.edges.get(node).get(input);
+        if(hasEdges(node, input)) {
+            return this.edges.get(node).get(input);
+        }
+        return null;
     }
 }

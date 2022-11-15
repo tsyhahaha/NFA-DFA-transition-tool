@@ -14,40 +14,36 @@ public class DFAGenerator {
         this.nfaGraph = nfaGraph;
     }
 
-    private List<String> getAllInput(List<Integer> nodes) {
-        List<String> inputs = new ArrayList<>();
-        for(Integer node: nodes) {
-            List<String> tempInputs = nfaGraph.getAllInput(node);
-            if(tempInputs == null) {
-                continue;
-            }
-            for(String input: tempInputs) {
-                if(!inputs.contains(input)) {
-                    inputs.add(input);
-                }
-            }
-        }
-        return inputs;
+    private List<String> getAllInput() {
+        return this.nfaGraph.getAllInput();
     }
 
+    /*
+    求node中所有节点对于input的迁移
+     */
     private Node getNextNode(Node node, String input) {
         List<Integer> resContent = new ArrayList<>();
         List<Integer> content = node.getContent();
-        for(Integer dfaNode: content) {
-            if(nfaGraph.getAllInput(dfaNode) == null) {
+        for (Integer dfaNode : content) {
+            if (nfaGraph.getAllInput() == null ||
+                    nfaGraph.getNextNodes(dfaNode, input) == null) {
                 continue;
             }
-            if(nfaGraph.getAllInput(dfaNode).contains(input)) {
-                List<Integer> nextContent = nfaGraph.getNextNodes(dfaNode, input);
-                for(Integer temp: nextContent) {
-                    if(!resContent.contains(temp)) {
-                        resContent.add(temp);
+            List<Integer> nextContent = nfaGraph.getNextNodes(dfaNode, input);
+            for (Integer temp : nextContent) {
+                List<Integer> temp_closure = nfaGraph.getClosure(temp);
+                for(Integer temp_node: temp_closure) {
+                    if (!resContent.contains(temp_node)) {
+                        resContent.add(temp_node);
                     }
                 }
             }
         }
         Node newNode = new Node("", resContent);
-        if(this.dfaNodes.contains(newNode)) {
+        if (resContent.size() == 0) {
+            return null;
+        }
+        if (this.dfaNodes.contains(newNode)) {
             int index = dfaNodes.indexOf(newNode);
             return dfaNodes.get(index);
         } else {
@@ -56,11 +52,11 @@ public class DFAGenerator {
     }
 
     private String genName() {
-        return "Node"+nodeIndex++;
+        return "Node" + nodeIndex++;
     }
 
     private void addEdge(Node node1, String input, Node node2) {
-        if(!this.dfaEdges.containsKey(node1)) {
+        if (!this.dfaEdges.containsKey(node1)) {
             this.dfaEdges.put(node1, new HashMap<>());
         }
         this.dfaEdges.get(node1).put(input, node2);
@@ -74,19 +70,17 @@ public class DFAGenerator {
 
         Stack<Node> nodeUnprocessed = new Stack<>();
         nodeUnprocessed.push(startNode);
-        while(nodeUnprocessed.size() > 0) {
+        while (nodeUnprocessed.size() > 0) {
             Node nowNode = nodeUnprocessed.pop();
-            List<Integer> content = nowNode.getContent();
-            List<String> inputs = getAllInput(content);
+            List<String> inputs = getAllInput();
             Node nextNode;
-            for(String input: inputs) {
-                if(input.equals("")) {
-                    continue;
-                }
-//                System.out.println(nowNode + " " +input);
+            for (String input : inputs) {
                 nextNode = getNextNode(nowNode, input);
+                if (nextNode == null) {
+                    continue;   // 如果对所有的输入都没有迁移，则节点出度为0
+                }
                 addEdge(nowNode, input, nextNode);
-                if(!dfaNodes.contains(nextNode)) {
+                if (!dfaNodes.contains(nextNode)) {
                     dfaNodes.add(nextNode);
                     nodeUnprocessed.push(nextNode);
                 }

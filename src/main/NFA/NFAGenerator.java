@@ -19,7 +19,7 @@ public class NFAGenerator {
     }
 
     private void setNode(int nodeNum) {
-        for(int i=0; i<nodeNum; i++) {
+        for(int i=1; i<=nodeNum; i++) {
             nfaNodes.add(i);
         }
     }
@@ -37,6 +37,7 @@ public class NFAGenerator {
     public NFAGraph run() throws FileNotFoundException {
         File file = new File(inputFile);
         Scanner scanner = new Scanner(file);
+        List<String> inputs = new ArrayList<>();
         int num = Integer.parseInt(scanner.nextLine());
         this.setNode(num);
         while(scanner.hasNext()) {
@@ -48,9 +49,10 @@ public class NFAGenerator {
                 this.addEdge(node1, "", node2);
             } else {
                 String temp = s[1];
+                inputs.add(temp);
                 this.addEdge(node1, temp, node2);
             }
         }
-        return new NFAGraph(nfaNodes, edges);
+        return new NFAGraph(nfaNodes, edges, inputs);
     }
 }
